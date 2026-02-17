@@ -214,7 +214,7 @@ def startapplication():
                 )
                 
                 if confidence > CONFIDENCE_THRESHOLD and not alarm_triggered:
-                    save_accident_photo(frame)
+                    save_accident_photo(frame)  # Saves original full-size frame
                     alarm_triggered = True
                     start_alert_thread()
 
