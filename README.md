@@ -20,7 +20,7 @@ Before starting, ensure you have the following installed on your system:
 Open a terminal (Command Prompt, PowerShell, or Terminal) and run:
 
 ```bash
-git clone https://github.com/jared27906/SJRoad.git
+git https://github.com/jpbreyta/Emergency-Road-Accident-Alert-System
 cd SJRoad
 ```
 
