@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Accident Detection System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgb(239, 68, 68); }
+            50% { border-color: rgb(220, 38, 38); }
+        }
+        .pulse-border {
+            animation: pulse-border 1s infinite;
+        }
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-in {
+            animation: slide-in 0.3s ease-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-video text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Road Accident Detection System</h1>
+                        <p class="text-sm text-blue-200">Real-time AI-powered monitoring</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-xs text-blue-200">System Status</div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            <span class="font-semibold">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column - Monitoring Area -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Video Feed Card -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-gray-800 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-white">
+                            <i class="fas fa-camera"></i>
+                            <h2 class="font-semibold">Live Video Feed</h2>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                            <span class="text-red-400 text-sm font-medium">LIVE</span>
+                        </div>
+                    </div>
+                    <div class="relative bg-black">
+                        <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Video Feed" class="w-full h-auto">
+                        <div id="videoOverlay" class="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-signal"></i> Confidence: <span id="liveConfidence">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Status Card -->
+                <div id="alertCard" class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div id="alertIcon" class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 id="alertTitle" class="text-lg font-semibold text-gray-800">Normal Traffic</h3>
+                                <p id="alertMessage" class="text-sm text-gray-600">System monitoring active</p>
+                            </div>
+                        </div>
+                        <div id="callStatusBadge" class="hidden bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-phone"></i> Call Made
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column - Dashboard & Controls -->
+            <div class="space-y-6">
+                
+                <!-- Emergency Controls -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                        Emergency Controls
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="callBtn" onclick="manualCall()" 
+                            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>Call Ambulance</span>
+                        </button>
+                        <button onclick="resetAlert()" 
+                            class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                            <i class="fas fa-redo"></i>
+                            <span>Reset Alert</span>
+                        </button>
+                    </div>
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span>Emergency: <span id="emergencyNumber" class="font-semibold">Loading...</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Dashboard -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                        Statistics
+                    </h3>
+                    <div class="space-y-4">
+                        
+                        <!-- Total Accidents -->
+                        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-car-crash text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600">Total Accidents</p>
+                                    <p id="totalAccidents" class="text-2xl font-bold text-gray-800">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detection Confidence -->
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-percentage text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600">Confidence</p>
+                                    <p id="confidence" class="text-2xl font-bold text-gray-800">0%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Last Detection -->
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <div class="flex items-center space-x-3 w-full">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-clock text-purple-600"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-gray-600">Last Detection</p>
+                                    <p id="lastDetection" class="text-xs font-semibold text-gray-800 break-words">None</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Call Status -->
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-phone text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600">Call Status</p>
+                                    <p id="callStatus2" class="text-sm font-semibold text-gray-800">Not Called</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        System Information
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-blue-200">AI Model:</span>
+                            <span class="font-semibold">Active</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-200">Detection Mode:</span>
+                            <span class="font-semibold">Real-time</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-200">Frame Rate:</span>
+                            <span class="font-semibold">30 FPS</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Modal for Accident Alert -->
+    <div id="alertModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl max-w-md w-full slide-in shake">
+            <div class="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+                <h3 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2 animate-pulse"></i>
+                    ACCIDENT DETECTED!
+                    <i class="fas fa-volume-up ml-auto animate-pulse"></i>
+                </h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-700 mb-4">An accident has been detected with high confidence. Do you want to call emergency services?</p>
+                <div class="flex items-center justify-between mb-4 p-3 bg-gray-100 rounded">
+                    <span class="text-sm text-gray-600">Confidence:</span>
+                    <span id="modalConfidence" class="font-bold text-lg text-red-600">0%</span>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="confirmCall()" 
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Call Now</span>
+                    </button>
+                    <button onclick="closeModal()" 
+                        class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-times"></i>
+                        <span>Dismiss</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio element for alarm sound -->
+    <audio id="alarmSound" preload="auto" loop>
+        <source src="{{ url_for('static', filename='alarm.wav') }}" type="audio/wav">
+    </audio>
+
+    <!-- Footer -->
+    <footer class="bg-white shadow-lg mt-8">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between text-sm text-gray-600">
+                <p><i class="far fa-copyright"></i> 2026 Road Accident Detection System</p>
+                <p>Powered by AI & Computer Vision</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let modalShown = false;
+
+        // Update status every second
+        setInterval(updateStatus, 1000);
+
+        function updateStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const alertCard = document.getElementById('alertCard');
+                    const alertIcon = document.getElementById('alertIcon');
+                    const alertTitle = document.getElementById('alertTitle');
+                    const alertMessage = document.getElementById('alertMessage');
+                    const callStatusBadge = document.getElementById('callStatusBadge');
+                    const callBtn = document.getElementById('callBtn');
+                    
+                    // Update live confidence
+                    document.getElementById('liveConfidence').textContent = data.confidence + '%';
+                    
+                    if (data.accident_detected) {
+                        // Update alert card to danger state
+                        alertCard.className = 'bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500 pulse-border';
+                        alertIcon.className = 'w-12 h-12 bg-red-100 rounded-full flex items-center justify-center';
+                        alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl animate-pulse"></i>';
+                        alertTitle.textContent = 'ACCIDENT DETECTED!';
+                        alertTitle.className = 'text-lg font-semibold text-red-600';
+                        alertMessage.textContent = 'Confidence: ' + data.confidence + '%';
+                        alertMessage.className = 'text-sm text-red-600 font-medium';
+                        
+                        // Show modal if not shown yet and call not made
+                        if (!modalShown && !data.call_made) {
+                            showModal(data.confidence);
+                            modalShown = true;
+                        }
+                        
+                        if (data.call_made) {
+                            callStatusBadge.classList.remove('hidden');
+                            callBtn.className = 'w-full bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg cursor-not-allowed flex items-center justify-center space-x-2';
+                            callBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Call Made</span>';
+                            callBtn.disabled = true;
+                        } else {
+                            callStatusBadge.classList.add('hidden');
+                            callBtn.className = 'w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 animate-pulse flex items-center justify-center space-x-2';
+                            callBtn.innerHTML = '<i class="fas fa-phone-alt"></i><span>CALL NOW!</span>';
+                            callBtn.disabled = false;
+                        }
+                    } else {
+                        // Normal state
+                        alertCard.className = 'bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500';
+                        alertIcon.className = 'w-12 h-12 bg-green-100 rounded-full flex items-center justify-center';
+                        alertIcon.innerHTML = '<i class="fas fa-check-circle text-green-600 text-2xl"></i>';
+                        alertTitle.textContent = 'Normal Traffic';
+                        alertTitle.className = 'text-lg font-semibold text-gray-800';
+                        alertMessage.textContent = 'System monitoring active';
+                        alertMessage.className = 'text-sm text-gray-600';
+                        callStatusBadge.classList.add('hidden');
+                        callBtn.className = 'w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center space-x-2';
+                        callBtn.innerHTML = '<i class="fas fa-phone-alt"></i><span>Call Ambulance</span>';
+                        callBtn.disabled = false;
+                        modalShown = false;
+                    }
+                    
+                    // Update statistics
+                    document.getElementById('totalAccidents').textContent = data.total_accidents;
+                    document.getElementById('confidence').textContent = data.confidence + '%';
+                    document.getElementById('lastDetection').textContent = data.last_detection_time || 'None';
+                    document.getElementById('emergencyNumber').textContent = data.emergency_number;
+                    document.getElementById('callStatus2').textContent = data.call_made ? 'Called' : 'Not Called';
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function showModal(confidence) {
+            document.getElementById('modalConfidence').textContent = confidence + '%';
+            document.getElementById('alertModal').classList.remove('hidden');
+            
+            // Play alarm sound
+            const alarmSound = document.getElementById('alarmSound');
+            alarmSound.currentTime = 0; // Reset to start
+            alarmSound.play().catch(error => {
+                console.log('Audio play failed:', error);
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('alertModal').classList.add('hidden');
+            
+            // Stop alarm sound
+            const alarmSound = document.getElementById('alarmSound');
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        }
+
+        function confirmCall() {
+            closeModal(); // This will also stop the alarm
+            manualCall();
+        }
+
+        function resetAlert() {
+            // No confirmation, just reset
+            fetch('/reset_alert')
+                .then(response => response.json())
+                .then(data => {
+                    modalShown = false;
+                    closeModal();
+                    showSuccessNotification('Alert reset successfully');
+                    updateStatus();
+                });
+        }
+
+        function manualCall() {
+            // No confirmation, just call directly
+            fetch('/manual_call')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show success in modal style
+                        showSuccessNotification('Emergency call initiated!');
+                    } else {
+                        showErrorNotification('Call failed. Check console for errors.');
+                    }
+                    updateStatus();
+                });
+        }
+
+        function showSuccessNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 slide-in';
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function showErrorNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 slide-in';
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-exclamation-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initial update
+        updateStatus();
+    </script>
+</body>
+</html>

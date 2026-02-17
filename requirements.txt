@@ -1,0 +1,5 @@
+Install imports
+Train or Download Model File
+Create twilio account .
+Insert your twilio credentials in the camera.py file.
+

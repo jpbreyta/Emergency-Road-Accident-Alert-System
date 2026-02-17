@@ -1,0 +1,17 @@
+# Core ML
+tensorflow>=2.12
+keras>=2.12
+
+# Numerical & data handling
+numpy>=1.23
+pandas>=1.5
+
+# Visualization (training/debugging)
+matplotlib>=3.7
+
+# Computer vision
+opencv-python>=4.8
+Pillow>=9.5
+
+# Messaging / alerts
+twilio>=8.0

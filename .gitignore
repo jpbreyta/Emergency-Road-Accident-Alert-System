@@ -1,0 +1,7 @@
+venv/
+*.h5
+*.keras
+*.zip
+*.mp4
+__pycache__/
+.env
