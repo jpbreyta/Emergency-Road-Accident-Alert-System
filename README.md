@@ -3,14 +3,6 @@
 
 
 
-
-https://github.com/user-attachments/assets/69ecddbf-3db9-43bb-9c0e-81497fb50600
-
-
-
-
-
-
 # Road Accident Detection & Alert System
 
 ## Prerequisites
